@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Unicode Character Selector</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <!--  Let's include jQuery and jQuery UI (http://jqueryui.com) and the CSS
+          from Google CDN: http://code.google.com/intl/de/apis/libraries/devguide.html#jquery)  -->
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/themes/smoothness/jquery-ui.css" media="all" rel="stylesheet" type="text/css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js" stype="text/javascript"></script>
+    <!--  We include some Google Web Fonts (http://www.google.com/webfonts)  -->
+    <link href='http://fonts.googleapis.com/css?family=Artifika&v1' rel='stylesheet' type='text/css'>
+    <!--  Now follows our custom CSS -->
+    <style type="text/css">
+      body {
+        background-color: royalblue }
+      h1, h2, h3, h4, h5, h6, p { font-family: 'Artifika', arial, serif; color: snow; }
+      h2 { font-size: 48px; margin: 5px auto; text-align: center; text-shadow: 2px 2px 2px #AAA; }
+      #about{ text-align: center; font-size: small; }
+      /*  ### Styling of the functional parts  ###  */
+      #coarse_slider {
+        /* float: left;
+        clear: left;
+        width: 300px;*/
+      }
+      .slider {
+        width: 98%;
+        margin-left: 1%;
+        margin-right: 1%;
+      }
+      /* #coarse_slider .ui-slider-range { background: #ef2929; }
+      #coarse_slider .ui-slider-handle { border-color: #ef2929; } */
+      #position_fine {
+        float: left;
+        clear: left;
+        width: 400px;
+      }
+      #character_hex {
+        float: left;
+        clear: left;
+      }
+      #character_hex_value {
+        width: 250px;
+        height: 70px;
+        font-size: 56px;
+        padding-top: 11px;
+        padding-left: 7px;
+      }
+      #wrapper {
+        width: 600px;
+        margin: 10px auto;
+      }
+      #character {
+        width: 160px;
+        height: 200px;
+        margin-top: 18px;
+        margin-left: 435px;
+        background-image: none;
+        font-size: 128px;
+        text-align: center;
+        padding-top: 36px;
+      }
+      /* #content > div.selector { padding: 10px !important; } */
+    </style>
+    <script type="text/javascript">
+      var max_fine = 50-1;
+      function offset() { return (max_fine+1)/2; }
+      var max_coarse = 11821-offset();
+      var defualt_value = 8594; // →
+      var default_value = 8470; // №
+      function hex2char ( hex ) {
+        // converts a single hex number to a character
+        // no checking is performed to ensure that 'hex' is really a hex value
+        var result = '';
+        var n = parseInt(hex, 16);
+        if (n <= 0xFFFF) { result += String.fromCharCode(n); }
+        else if (n <= 0x10FFFF) {
+          n -= 0x10000;
+          result += String.fromCharCode(0xD800 | (n >> 10)) + String.fromCharCode(0xDC00 | (n & 0x3FF));
+        }
+        else { result += 'hex2Char error: Code point out of range: '+dec2hex(n); }
+        return result;
+      }
+      function dec2hex(decimal) {
+          hex = decimal.toString( 16 );
+          if ( hex.length === 1 )
+            hex = "0" + hex;
+        return hex.toUpperCase();
+      }
+      function staticPosition() {
+        var coarse = $( "#coarse_slider" ).slider("value");
+        var fine = $( "#fine_slider" ).slider("value");
+        return position = coarse+fine;
+      }
+      function updateCoarse(event, ui) {
+        var coarse = ui.value;
+        var fine = $( "#fine_slider" ).slider("value");
+        refreshCharacter(coarse+fine);
+      }
+      function updateFine(event, ui) {
+        var coarse = $( "#coarse_slider" ).slider("value");
+        var fine = ui.value;
+        refreshCharacter(coarse+fine);
+      }
+      function refreshCharacter(position) {
+        var hex = dec2hex( position );
+        $( "#character_hex_value" ).text("U+"+hex);
+        $( "#character" ).text(hex2char(hex));
+      }
+      $(function() {
+         $( "#fine_slider" ).slider({
+          animate: true,
+          max: max_fine,
+          value: offset(),
+          slide: updateFine,
+          change: updateFine 
+        });
+       $( "#coarse_slider" ).slider({
+          animate: true,
+          max: max_coarse,
+          value: 0,
+          slide: updateCoarse,
+          change: updateCoarse 
+        });
+      });
+      function restorePreviousState() {
+        var coarse_pos;
+        if (localStorage['prev_pos']) {
+            var prev_pos = localStorage['prev_pos'];
+            console.log(prev_pos);
+            if (prev_pos - offset() > 0 && prev_pos < max_coarse) coarse_pos = prev_pos - offset();
+            else coarse_pos = default_value - offset();
+        }
+        else coarse_pos = default_value - offset();
+        $( "#coarse_slider" ).slider( "value", coarse_pos );
+      }
+      function saveCurrentState() {
+        localStorage['prev_pos'] = staticPosition();
+      }
+    </script>
+  </head>
+<body onload="restorePreviousState()" onbeforeunload="saveCurrentState()">
+  <div id="wrapper">
+    <div id="header"> 
+     <h2>js-Unicode-Selector</h2>
+    </div>
+    <div id="content">
+      <div class="selector">
+      <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
+        <span class="ui-icon ui-icon-pencil" style="float:left; margin: 2px 5px 0 0;"></span>
+        Move slider to choose Unicode Character
+      </p>
+      <div id="coarse_slider" class="slider"></div>
+      <div id="position_fine">
+        <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
+          <span class="ui-icon ui-icon-key" style="float:left; margin: 2px 5px 0 0;"></span>
+          Fine Tuning
+        </p>
+        <div id="fine_slider" class="slider"></div>
+      </div>
+     
+      <div id="character_hex"> 
+        <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
+          <span class="ui-icon ui-icon-key" style="float:left; margin: 2px 5px 0 0;"></span>
+          Hexadecimal Value
+        </p>
+        <div id="character_hex_value" class="ui-widget-content ui-corner-all"></div>
+      </div><!-- End #character_hex -->
+      <div id="character" class="ui-widget-content ui-corner-all"></div>
+      </div><!-- End .selector -->
+      <div id="about">
+       <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
+        <span class="ui-icon ui-icon-person" style="float:left; margin: 2px 5px 0 0;"></span>
+        © 2011, <a href="http://blog.philippklaus.de" alt="Philipp Klaus's Computing Blog">Philipp Klaus</a>
+       </p>
+      </div><!-- End #about -->
+    </div><!-- End #content -->
+  </div><!-- End #wrapper -->
+</body>
+</html>
