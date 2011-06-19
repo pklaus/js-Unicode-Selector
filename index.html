@@ -7,6 +7,8 @@
           from Google CDN: http://code.google.com/intl/de/apis/libraries/devguide.html#jquery)  -->
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/themes/smoothness/jquery-ui.css" media="all" rel="stylesheet" type="text/css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+    <script src="jquery.sb.min.js" type="text/javascript"></script>
+    <link href="jquery.sb.css" media="all" rel="stylesheet" type="text/css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js" stype="text/javascript"></script>
     <!--  We include some Google Web Fonts (http://www.google.com/webfonts)  -->
     <link href='http://fonts.googleapis.com/css?family=Artifika&v1' rel='stylesheet' type='text/css'>
@@ -14,8 +16,13 @@
     <style type="text/css">
       body {
         background-color: royalblue }
-      h1, h2, h3, h4, h5, h6, p, a { font-family: 'Artifika', arial, serif; color: snow; }
-      h2 { font-size: 48px; margin: 5px auto; text-align: center; text-shadow: 2px 2px 2px #AAA; }
+      h1, h2, h3, h4, h5, h6, p, a, span { font-family: 'Artifika', arial, serif;}
+      h2 { font-size: 48px; margin: 5px auto; text-align: center; text-shadow: 2px 2px 2px #AAA; color: snow;  }
+      a:link, a:visited { color: #FF6; }
+      a:hover { color: #FF0; }
+      a:link, a:visited { text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      div { margin: 0; padding: 0 }
       #about{ text-align: center; font-size: small; }
       /*  ### Styling of the functional parts  ###  */
       #coarse_slider {
@@ -60,6 +67,9 @@
       #toolbox ul li {
         list-style: none;
       }
+      #font_container { font-size: small; margin-top: 6px; }
+      div.selectbox { width: 123px !important; }
+      #font_container div.text, ul.selectbox li div.item div.text { font-family: 'Artifika', arial, serif; font-size: small; }
       #wrapper {
         width: 600px;
         margin: 10px auto;
@@ -101,7 +111,7 @@
         var coarse = $( "#coarse_slider" ).slider("value");
         var fine = $( "#fine_slider" ).slider("value");
         return position = coarse+fine;
-      }
+      };
       function updateCoarse(event, ui) {
         var coarse = ui.value;
         var fine = $( "#fine_slider" ).slider("value");
@@ -138,6 +148,22 @@
           value: 0,
           slide: updateCoarse,
           change: updateCoarse 
+        });
+        // Fonts: The default system font is the first: - clear CSS -
+        // Then Arial Unicode MS (also on Mac since 10.5) and Lucida
+        // in the respective Win and Mac Unicode version.
+        var fonts = [ ['Sys default', ''],
+          ['Arial...', "'Arial Unicode MS', 'Arial', arial, serif"],
+          ['Lucida...', "'Lucida Sans Unicode', 'Lucida Grande', arial, serif"] ];
+        var options;
+        for (var i=0; i<fonts.length; i++){
+          options += '<option value="' + i + '">' + fonts[i][0] + '</option>';
+        }
+        $("#fontSelector").html(options);
+        $('#fontSelector option:first').attr('selected', 'selected');
+        $("#fontSelector").sb();
+        $("#fontSelector").change(function() {
+          $( "#character" ).css('font-family', fonts[$(this).val()][1]);
         });
       });
       function onHashChange() { onLoad(); }
@@ -196,6 +222,10 @@
         <ul>
           <li><a id="permalink" href="" alt="Permalink">Permalink</a></li>
         </ul>
+        <div id="font_container">
+          <span>Select a font:<br /></span>
+          <select id="fontSelector" class="round_sb"></select>
+        </div>
       </div>
       <div id="character" class="ui-widget-content ui-corner-all"></div>
       </div><!-- End .selector -->
