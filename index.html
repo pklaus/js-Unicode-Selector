@@ -139,8 +139,11 @@
         refreshCharacter(coarse+fine);
       }
       var AJAX_WAIT = 100;
+      var last_refresh;
       function refreshCharacter(position) {
         var hex = dec2hex( position );
+        if (last_refresh === position) return;
+        last_refresh = position;
         $( "#character_hex_value" ).text("U+"+hex);
         $( "#character" ).text(hex2char(hex));
         $( "#permalink" ).attr( {
