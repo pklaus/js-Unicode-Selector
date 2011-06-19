@@ -25,6 +25,9 @@
       a:hover { text-decoration: underline; }
       div { margin: 0; padding: 0 }
       #about{ text-align: center; font-size: small; }
+      #about .repolink {
+        color: #CCC;
+      }
       /*  ### Styling of the functional parts  ###  */
       #coarse_slider {
         /* float: left;
@@ -68,22 +71,34 @@
       #toolbox ul li {
         list-style: none;
       }
-      #font_container { font-size: small; margin-top: 6px; }
+      #toolbox .container { font-size: small; margin-top: 6px; }
       div.selectbox { width: 123px !important; }
-      #font_container div.text, ul.selectbox li div.item div.text { font-family: 'Artifika', arial, serif; font-size: small; }
+      #toolbox .container div.text, ul.selectbox li div.item div.text { font-family: 'Artifika', arial, serif; font-size: small; }
       #wrapper {
         width: 600px;
         margin: 10px auto;
       }
-      #character {
+      #char_container {
         width: 160px;
-        height: 200px;
-        margin-top: 18px;
+        height: 215px;
+        margin-top: 15px;
         margin-left: 435px;
         background-image: none;
-        font-size: 128px;
         text-align: center;
-        padding-top: 36px;
+      }
+      #char_name {
+        /* when standing alone */
+        margin-right: 5px;
+        display: block;
+        text-align: right;
+        font-size: 12px;
+        color: #EEE;
+      }
+      #character {
+        width: 160px;
+        height: 170px;
+        padding-top: 40px;
+        font-size: 128px;
       }
       /* #content > div.selector { padding: 10px !important; } */
     </style>
@@ -123,15 +138,19 @@
         var fine = ui.value;
         refreshCharacter(coarse+fine);
       }
+      var AJAX_WAIT = 100;
       function refreshCharacter(position) {
         var hex = dec2hex( position );
         $( "#character_hex_value" ).text("U+"+hex);
         $( "#character" ).text(hex2char(hex));
         $( "#permalink" ).attr( {
-          'href': '#'+dec2hex(position),
+          'href': '#U+'+dec2hex(position),
           'alt' : 'Permanent Link to the Unicode Character U+'+dec2hex(position)
         } );
         $( "#permalink" ).text('Permalink to '+hex2char(hex));
+        clearTimeout(t);
+        clearName();
+        t = setTimeout("requestName()",AJAX_WAIT);
       }
       $(function() {
          $( "#fine_slider" ).slider({
@@ -166,14 +185,63 @@
         $("#fontSelector").change(function() {
           $( "#character" ).css('font-family', fonts[$(this).val()][1]);
         });
+        // Now the related_links for the charachter. We want to be able
+        // to format strings so we add this String.format function:
+        String.prototype.format = function() {
+          // http://stackoverflow.com/questions/610406/javascript-printf-string-format/4673436#4673436
+          var args = arguments;
+          return this.replace(/{(\d+)}/g, function(match, number) {
+            return typeof args[number] != 'undefined'
+              ? args[number]
+              : '{' + number + '}'
+            ;
+          });
+        };
+        var related_links = [ ['Infos on …', ''],
+          ['FileFormat.info', 'http://www.fileformat.info/info/unicode/char/{0}/index.htm'],
+          //currently offline? ['Unicode cldr', 'http://unicode.org/cldr/utility/character.jsp?a={0}'],
+        ];
+        var options = '';
+        for (var i=0; i<related_links.length; i++){
+          options += '<option value="' + i + '">' + related_links[i][0] + '</option>';
+        }
+        $("#related_links").html(options);
+        $('#related_links option:first').attr('selected', 'selected');
+        $("#related_links").sb();
+        $("#related_links").change(function() {
+          if ( $(this).val() == 0) return;
+          window.open(related_links[$(this).val()][1].format( dec2hex(staticPosition()) ));
+        });
       });
+      var t;
+      function clearName() { $('#char_name').html('&nbsp;'); }
+      function showName(data) {
+          $('#char_name').text(data.split(';')[1]);
+      }
+      function fixed_hex(hex,len) {
+        var prefix = ""
+        for ( var i = 0; i<len-hex.length; i++) prefix += "0";
+        return prefix+hex
+      }
+      function requestName() {
+        var uri = 'resources/'+fixed_hex(dec2hex(staticPosition()),4)+'.xml'
+        $.ajax({
+          type: "GET",
+          url: uri,
+          dataType: "xml",
+          success: function(xml) {
+            showName($(xml).find('db').find('data').text())
+          }
+        });
+      }
+
       function onHashChange() { onLoad(); }
       function onLoad() {
         // get the unicode character from the #123 'hash' (preferred)
         var hash=location.hash;
         // or restore previous state (use HTML5 localStorage):
         var prev_pos = localStorage['prev_pos'];
-        req_pos = hex2dec(hash.slice(1))
+        req_pos = hex2dec(hash.slice(3))
         // if req_pos >= 0 :
         if (req_pos+1) new_pos = req_pos;
         else if (prev_pos) new_pos = prev_pos;
@@ -195,46 +263,54 @@
 <body onload="onLoad()" onbeforeunload="saveCurrentState()" onhashchange="onHashChange()">
   <div id="wrapper">
     <div id="header"> 
-     <h2>js-Unicode-Selector</h2>
+      <h2>js-Unicode-Selector</h2>
     </div>
     <div id="content">
       <div class="selector">
-      <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
-        <span class="ui-icon ui-icon-pencil" style="float:left; margin: 2px 5px 0 0;"></span>
-        Move slider to choose Unicode Character
-      </p>
-      <div id="coarse_slider" class="slider"></div>
-      <div id="position_fine">
         <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
-          <span class="ui-icon ui-icon-key" style="float:left; margin: 2px 5px 0 0;"></span>
-          Fine Tuning
+          <span class="ui-icon ui-icon-pencil" style="float:left; margin: 2px 5px 0 0;"></span>
+          Move slider to choose Unicode Character
         </p>
-        <div id="fine_slider" class="slider"></div>
-      </div>
-     
-      <div id="character_hex"> 
-        <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
-          <span class="ui-icon ui-icon-key" style="float:left; margin: 2px 5px 0 0;"></span>
-          Hexadecimal Value
-        </p>
-        <div id="character_hex_value" class="ui-widget-content ui-corner-all"></div>
-      </div><!-- End #character_hex -->
-      <div id="toolbox" class="ui-widget-content ui-corner-all">
-        <ul>
-          <li><a id="permalink" href="" alt="Permalink">Permalink</a></li>
-        </ul>
-        <div id="font_container">
-          <span>Select a font:<br /></span>
-          <select id="fontSelector" class="round_sb"></select>
+        <div id="coarse_slider" class="slider"></div>
+        <div id="position_fine">
+          <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
+            <span class="ui-icon ui-icon-key" style="float:left; margin: 2px 5px 0 0;"></span>
+            Fine Tuning
+          </p>
+          <div id="fine_slider" class="slider"></div>
         </div>
-      </div>
-      <div id="character" class="ui-widget-content ui-corner-all"></div>
-      </div><!-- End .selector -->
+     
+        <div id="character_hex">
+          <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
+            <span class="ui-icon ui-icon-key" style="float:left; margin: 2px 5px 0 0;"></span>
+            Hexadecimal Value
+          </p>
+          <div id="character_hex_value" class="ui-widget-content ui-corner-all"></div>
+        </div><!-- End #character_hex -->
+        <div id="toolbox" class="ui-widget-content ui-corner-all">
+          <ul>
+            <li><a id="permalink" href="" alt="Permalink">Permalink</a></li>
+          </ul>
+          <div id="font_container" class="container">
+            <span>Select a font:<br /></span>
+            <select id="fontSelector" class="round_sb"></select>
+          </div>
+          <div id="related_links_container" class="container">
+            <span>More Character<br /></span>
+            <select id="related_links" class="round_sb"></select>
+          </div>
+        </div>
+        <div id="char_container">
+          <div id="character" class="ui-widget-content ui-corner-all"></div>
+        </div>
+      </div> <!-- End .selector -->
+          <span id="char_name">&nbsp;</span>
       <div id="about">
        <p class="ui-state-default ui-corner-all ui-helper-clearfix" style="padding:4px;">
         <span class="ui-icon ui-icon-person" style="float:left; margin: 2px 5px 0 0;"></span>
         © 2011, <a href="http://blog.philippklaus.de" alt="Philipp Klaus's Computing Blog">Philipp Klaus</a>
        </p>
+        <span class="repolink">This site is Open Source: <a href="https://github.com/pklaus/js-Unicode-Selector">github.com/pklaus/js-Unicode-Selector</a>.</span>
       </div><!-- End #about -->
     </div><!-- End #content -->
   </div><!-- End #wrapper -->
