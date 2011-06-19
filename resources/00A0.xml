@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><records><db><record>160</record><data>00A0;NO-BREAK SPACE;Zs;0;CS;[noBreak] 0020;;;;N;NON-BREAKING SPACE;;;;;;;10;1.1</data></db>
+<desc><record>160</record><data>¶• commonly abbreviated as NBSP¶→ (space - 0020)¶→ (figure space - 2007)¶→ (narrow no-break space - 202F)¶→ (word joiner - 2060)¶→ (zero width no-break space - FEFF)¶≈ [noBreak] 0020</data></desc>
+</records>

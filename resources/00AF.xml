@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><records><db><record>175</record><data>00AF;MACRON;Sk;0;ON;[compat] 0020 0304;;;;N;SPACING MACRON;;;;;;;10;1.1</data></db>
+<desc><record>175</record><data>¶= overline, APL overbar¶• this is a spacing character¶→ (modifier letter macron - 02C9)¶→ (combining macron - 0304)¶→ (combining overline - 0305)¶≈ 0020 0304</data></desc>
+</records>

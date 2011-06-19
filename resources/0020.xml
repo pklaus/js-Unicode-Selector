@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><records><db><record>32</record><data>0020;SPACE;Zs;0;WS;;;;;N;;;;;;;;1;1.1</data></db>
+<desc><record>32</record><data>¶• sometimes considered a control code¶• other space characters: 2000-200A¶→ (no-break space - 00A0)¶→ (zero width space - 200B)¶→ (word joiner - 2060)¶→ (ideographic space - 3000)¶→ (zero width no-break space - FEFF)</data></desc>
+</records>
