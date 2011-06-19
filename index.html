@@ -14,7 +14,7 @@
     <style type="text/css">
       body {
         background-color: royalblue }
-      h1, h2, h3, h4, h5, h6, p { font-family: 'Artifika', arial, serif; color: snow; }
+      h1, h2, h3, h4, h5, h6, p, a { font-family: 'Artifika', arial, serif; color: snow; }
       h2 { font-size: 48px; margin: 5px auto; text-align: center; text-shadow: 2px 2px 2px #AAA; }
       #about{ text-align: center; font-size: small; }
       /*  ### Styling of the functional parts  ###  */
@@ -28,12 +28,12 @@
         margin-left: 1%;
         margin-right: 1%;
       }
-      /* #coarse_slider .ui-slider-range { background: #ef2929; }
-      #coarse_slider .ui-slider-handle { border-color: #ef2929; } */
+      .ui-slider-range { background: #6c6; }
+      .ui-slider-handle { border-color: #6c6; }
       #position_fine {
         float: left;
         clear: left;
-        width: 400px;
+        width: 420px;
       }
       #character_hex {
         float: left;
@@ -45,6 +45,20 @@
         font-size: 56px;
         padding-top: 11px;
         padding-left: 7px;
+      }
+      #toolbox {
+        background: #8b9;
+        float: left;
+        margin-left: 20px;
+        margin-top:  14px;
+        padding: 4px 6px;
+      }
+      #toolbox ul {
+        padding: 0px;
+        margin: 0px;
+      }
+      #toolbox ul li {
+        list-style: none;
       }
       #wrapper {
         width: 600px;
@@ -81,12 +95,8 @@
         else { result += 'hex2Char error: Code point out of range: '+dec2hex(n); }
         return result;
       }
-      function dec2hex(decimal) {
-          hex = decimal.toString( 16 );
-          if ( hex.length === 1 )
-            hex = "0" + hex;
-        return hex.toUpperCase();
-      }
+      function dec2hex( s ) { return ( s<15.5 ? '0' : '' ) + Math.round( s ).toString( 16 ).toUpperCase(); }
+      function hex2dec( s ) { return parseInt( s, 16 ); }
       function staticPosition() {
         var coarse = $( "#coarse_slider" ).slider("value");
         var fine = $( "#fine_slider" ).slider("value");
@@ -106,10 +116,16 @@
         var hex = dec2hex( position );
         $( "#character_hex_value" ).text("U+"+hex);
         $( "#character" ).text(hex2char(hex));
+        $( "#permalink" ).attr( {
+          'href': '#'+dec2hex(position),
+          'alt' : 'Permanent Link to the Unicode Character U+'+dec2hex(position)
+        } );
+        $( "#permalink" ).text('Permalink to '+hex2char(hex));
       }
       $(function() {
          $( "#fine_slider" ).slider({
           animate: true,
+          range: "min",
           max: max_fine,
           value: offset(),
           slide: updateFine,
@@ -117,29 +133,39 @@
         });
        $( "#coarse_slider" ).slider({
           animate: true,
+          range: "min",
           max: max_coarse,
           value: 0,
           slide: updateCoarse,
           change: updateCoarse 
         });
       });
-      function restorePreviousState() {
-        var coarse_pos;
-        if (localStorage['prev_pos']) {
-            var prev_pos = localStorage['prev_pos'];
-            console.log(prev_pos);
-            if (prev_pos - offset() > 0 && prev_pos < max_coarse) coarse_pos = prev_pos - offset();
-            else coarse_pos = default_value - offset();
-        }
-        else coarse_pos = default_value - offset();
+      function onHashChange() { onLoad(); }
+      function onLoad() {
+        // get the unicode character from the #123 'hash' (preferred)
+        var hash=location.hash;
+        // or restore previous state (use HTML5 localStorage):
+        var prev_pos = localStorage['prev_pos'];
+        req_pos = hex2dec(hash.slice(1))
+        // if req_pos >= 0 :
+        if (req_pos+1) new_pos = req_pos;
+        else if (prev_pos) new_pos = prev_pos;
+        else new_pos = default_value;
+        if (new_pos < 0 || new_pos > max_coarse + max_fine) new_pos = default_value
+        //now we can be sure, the new_pos is in the range of possible values
+        var coarse_pos, fine_pos;
+        if (new_pos < offset()) { coarse_pos = 0; fine_pos = new_pos; }
+        else if (new_pos > max_coarse + offset()) {coarse_pos = max_coarse; fine_pos = new_pos-coarse_pos; }
+        else { coarse_pos = new_pos - offset(); fine_pos = offset(); }
         $( "#coarse_slider" ).slider( "value", coarse_pos );
+        $( "#fine_slider" ).slider( "value", fine_pos);
       }
       function saveCurrentState() {
         localStorage['prev_pos'] = staticPosition();
       }
     </script>
   </head>
-<body onload="restorePreviousState()" onbeforeunload="saveCurrentState()">
+<body onload="onLoad()" onbeforeunload="saveCurrentState()" onhashchange="onHashChange()">
   <div id="wrapper">
     <div id="header"> 
      <h2>js-Unicode-Selector</h2>
@@ -166,6 +192,11 @@
         </p>
         <div id="character_hex_value" class="ui-widget-content ui-corner-all"></div>
       </div><!-- End #character_hex -->
+      <div id="toolbox" class="ui-widget-content ui-corner-all">
+        <ul>
+          <li><a id="permalink" href="" alt="Permalink">Permalink</a></li>
+        </ul>
+      </div>
       <div id="character" class="ui-widget-content ui-corner-all"></div>
       </div><!-- End .selector -->
       <div id="about">
