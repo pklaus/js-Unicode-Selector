@@ -140,6 +140,7 @@
       }
       var AJAX_WAIT = 100;
       var last_refresh;
+      var already_queried = Array();
       function refreshCharacter(position) {
         var hex = dec2hex( position );
         if (last_refresh === position) return;
@@ -152,8 +153,11 @@
         } );
         $( "#permalink" ).text('Permalink to '+hex2char(hex));
         clearTimeout(t);
-        clearName();
-        t = setTimeout("requestName()",AJAX_WAIT);
+        var request_cached = already_queried.indexOf(hex) >= 0;
+        if (!request_cached) clearName();
+        wait_time = (request_cached) ? 0 : AJAX_WAIT;
+        already_queried.push(hex);
+        t = setTimeout("requestName()",wait_time);
       }
       $(function() {
          $( "#fine_slider" ).slider({
