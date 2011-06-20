@@ -60,9 +60,10 @@
       #toolbox {
         background: #8b9;
         float: left;
-        margin-left: 20px;
+        margin-left: 14px;
         margin-top:  14px;
         padding: 4px 6px;
+        width: 128px;
       }
       #toolbox ul {
         padding: 0px;
@@ -72,8 +73,14 @@
         list-style: none;
       }
       #toolbox .container { font-size: small; margin-top: 6px; }
+      #toolbox .char_preview {
+        float: right;
+        display: block;
+      }
       div.selectbox { width: 123px !important; }
-      #toolbox .container div.text, ul.selectbox li div.item div.text { font-family: 'Artifika', arial, serif; font-size: small; }
+      #toolbox .container div.text, ul.selectbox li div.item div.text {
+        font-family: 'Artifika', arial, serif; font-size: small;
+      }
       #wrapper {
         width: 600px;
         margin: 10px auto;
@@ -151,7 +158,7 @@
           'href': '#U+'+dec2hex(position),
           'alt' : 'Permanent Link to the Unicode Character U+'+dec2hex(position)
         } );
-        $( "#permalink" ).text('Permalink to '+hex2char(hex));
+        $( "#permalink" ).html('Permalink to <span class="char_preview">'+hex2char(hex)+'</span>');
         clearTimeout(t);
         var request_cached = already_queried.indexOf(hex) >= 0;
         if (!request_cached) clearName();
