@@ -104,8 +104,8 @@
       #character {
         width: 160px;
         height: 170px;
-        padding-top: 20px;
-        padding-bottom: 20px;
+        padding-top: 32px;
+        padding-bottom: 8px;
         font-size: 128px;
         line-height: 172px;
       }
@@ -188,9 +188,11 @@
         // Fonts: The default system font is the first: - clear CSS -
         // Then Arial Unicode MS (also on Mac since 10.5) and Lucida
         // in the respective Win and Mac Unicode version.
-        var fonts = [ ['Sys default', ''],
-          ['Arial...', "'Arial Unicode MS', 'Arial', arial, serif"],
-          ['Lucida...', "'Lucida Sans Unicode', 'Lucida Grande', arial, serif"] ];
+        // the 3rd and 4th value are padding-top and padding-bottom.
+        // Please adjust the CSS for #character too when changing here..
+        var fonts = [ ['Sys default', '', 32, 8 ],
+          ['Arial...', "'Arial Unicode MS', 'Arial', arial, serif", 16,24],
+          ['Lucida...', "'Lucida Sans Unicode', 'Lucida Grande', arial, serif",18,22] ];
         var options;
         for (var i=0; i<fonts.length; i++){
           options += '<option value="' + i + '">' + fonts[i][0] + '</option>';
@@ -200,6 +202,8 @@
         $("#fontSelector").sb();
         $("#fontSelector").change(function() {
           $( "#character" ).css('font-family', fonts[$(this).val()][1]);
+          $( "#character" ).css('padding-top', fonts[$(this).val()][2]);
+          $( "#character" ).css('padding-bottom', fonts[$(this).val()][3]);
         });
         // Now the related_links for the charachter. We want to be able
         // to format strings so we add this String.format function:
